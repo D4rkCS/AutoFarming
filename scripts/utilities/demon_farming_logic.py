@@ -68,12 +68,12 @@ class IDemonFarmer(IFarmer):
         demon_to_farm: Vision = vio.og_demon,
         time_to_sleep=9.3,
         do_dailies=False,
-        do_daily_pvp=False,
+        do_daily_pvp=True,
         password: str | None = None,
         indura_difficulty: str = "extreme",  # Difficulty of Indura demon
         indura_team: str = "fairies",
     ):
-        super().__init__()
+        super().__init__(do_daily_pvp=do_daily_pvp)
 
         # Store the account password in this instance if given
         if password:
@@ -94,7 +94,6 @@ class IDemonFarmer(IFarmer):
         self.sleep_before_accept = time_to_sleep
 
         # Set specific properties of our DailyFarmer
-        IFarmer.daily_farmer.set_daily_pvp(do_daily_pvp)
         IFarmer.daily_farmer.add_complete_callback(self.dailies_complete_callback)
 
         # For the Indura fight!
@@ -189,26 +188,26 @@ class IDemonFarmer(IFarmer):
 
         if self.demon_to_farm == vio.indura_demon:
             if self.indura_difficulty == "extreme":
-                if find(vio.demon_normal_diff, screenshot):
-                    find_and_click(vio.demon_normal_diff, screenshot, window_location, threshold=0.6)
+                if find(vio.normal_difficulty, screenshot):
+                    find_and_click(vio.normal_difficulty, screenshot, window_location, threshold=0.6)
                 else:
-                    find_and_click(vio.demon_extreme_diff, screenshot, window_location, threshold=0.6)
+                    find_and_click(vio.extreme_difficulty, screenshot, window_location, threshold=0.6)
             elif self.indura_difficulty == "hell":
-                if find(vio.demon_normal_diff, screenshot):
-                    find_and_click(vio.demon_hard_diff, screenshot, window_location, threshold=0.6)
+                if find(vio.normal_difficulty, screenshot):
+                    find_and_click(vio.hard_difficulty, screenshot, window_location, threshold=0.6)
                 else:
-                    find_and_click(vio.demon_hell_diff, screenshot, window_location, threshold=0.6)
+                    find_and_click(vio.hell_difficulty, screenshot, window_location, threshold=0.6)
             elif self.indura_difficulty == "chaos":
-                if find(vio.demon_normal_diff, screenshot):
-                    find_and_click(vio.demon_extreme_diff, screenshot, window_location, threshold=0.6)
+                if find(vio.normal_difficulty, screenshot):
+                    find_and_click(vio.extreme_difficulty, screenshot, window_location, threshold=0.6)
                 else:
-                    find_and_click(vio.demon_chaos_diff, screenshot, window_location, threshold=0.6)
+                    find_and_click(vio.chaos_difficulty, screenshot, window_location, threshold=0.6)
             else:
                 raise RuntimeError(f"Unknown Indura difficulty: {self.indura_difficulty}")
             return
 
         # Click on the difficuly -- ONLY HELL
-        find_and_click(vio.demon_hell_diff, screenshot, window_location, threshold=0.6)
+        find_and_click(vio.hell_difficulty, screenshot, window_location, threshold=0.6)
 
     def wait_for_accepting_invite(self):
         """Wait for 9 seconds before accepting the invite. This should be a threading event!"""
@@ -342,6 +341,7 @@ class IDemonFarmer(IFarmer):
         if self.demon_to_farm == vio.indura_demon and (
             (self.indura_fight_thread is None) or not self.indura_fight_thread.is_alive()
         ):
+            self.fighter.prepare_for_new_fight()
             self.indura_fight_thread = threading.Thread(target=self.fighter.run, daemon=True)
             self.indura_fight_thread.start()
             print("Indura demon fighter started!")
@@ -432,7 +432,7 @@ class DemonFarmer(IDemonFarmer):
         time_to_sleep=9.4,
         time_between_demons=2,
         do_dailies=False,  # Do we halt demon farming to do dailies?
-        do_daily_pvp=False,  # If we do dailies, do we do PVP?
+        do_daily_pvp=True,  # If we do dailies, do we do PVP?
         password: str = None,
         indura_difficulty: str = "extreme",  # Difficulty of Indura demon
         indura_team: str = "fairies",
